@@ -13,7 +13,7 @@ func main() {
 }
 
 func rand(w http.ResponseWriter, req *http.Request) {
-	random := rand2.Int32N(6)
+	random := rand2.Int32N(6) + 1
 	ran := strconv.Itoa(int(random))
 	w.Write([]byte(ran))
 }
