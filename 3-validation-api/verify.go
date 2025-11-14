@@ -65,10 +65,22 @@ func (m Email) Verify(w http.ResponseWriter, r *http.Request) {
 	}
 	if user.Hash != hash {
 		fmt.Println("ERROR: USER HASH DOES NOT MATCH")
+		_, err = w.Write([]byte("false"))
+		if err != nil {
+			fmt.Println(err)
+		}
 	} else {
 		fmt.Println("USER AUTHENTIFIED")
+		_, err = w.Write([]byte("true"))
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 	w.WriteHeader(200)
+	err = os.Remove("user.json")
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func (u User) CreateAndSendEmail(text string) {
