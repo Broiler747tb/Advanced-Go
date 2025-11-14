@@ -46,14 +46,29 @@ func (m Email) Send(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		hash := MakeUser(data)
-		address := fmt.Sprint("http://localhost:8081/Verify/", hash)
+		address := fmt.Sprint("http://localhost:8081/verify/", hash)
 		User{Email: data.Email}.CreateAndSendEmail(address)
 	}
 
 }
 
 func (m Email) Verify(w http.ResponseWriter, r *http.Request) {
-
+	hash := r.PathValue("hash")
+	file, err := os.ReadFile("user.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+	user := User{}
+	err = json.Unmarshal(file, &user)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if user.Hash != hash {
+		fmt.Println("ERROR: USER HASH DOES NOT MATCH")
+	} else {
+		fmt.Println("USER AUTHENTIFIED")
+	}
+	w.WriteHeader(200)
 }
 
 func (u User) CreateAndSendEmail(text string) {
