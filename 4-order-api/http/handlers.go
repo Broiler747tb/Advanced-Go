@@ -72,7 +72,7 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 			Hash:        body.Hash,
 			Model:       gorm.Model{ID: uint(id)},
 			Description: body.Description,
-			ImageLinks:  body.ImageLinks,
+			Images:      body.Images,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotModified)
