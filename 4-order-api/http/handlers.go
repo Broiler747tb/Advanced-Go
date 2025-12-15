@@ -2,12 +2,13 @@ package http
 
 import (
 	"fmt"
-	"gorm.io/gorm"
 	"net/http"
 	"order-api/Product"
 	"order-api/req"
 	"order-api/res"
 	"strconv"
+
+	"gorm.io/gorm"
 )
 
 type ProductHandlerDeps struct {
@@ -71,7 +72,7 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 			Hash:        body.Hash,
 			Model:       gorm.Model{ID: uint(id)},
 			Description: body.Description,
-			ImageLink:   body.ImageLink,
+			ImageLinks:  body.ImageLinks,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotModified)

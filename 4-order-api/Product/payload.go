@@ -8,5 +8,5 @@ type LinkUpdateRequest struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description"`
 	Hash        string `json:"hash"`
-	ImageLink   string `json:"imageLink"`
+	ImageLinks  string `json:"imageLinks"`
 }

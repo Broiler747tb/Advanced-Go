@@ -15,10 +15,11 @@ func Logger(next http.Handler) http.Handler {
 			ResponseWriter: w,
 		}
 		next.ServeHTTP(wrapper, r)
-		logrus.WithFields(logrus.Fields{
+		MessageLogger := logrus.WithFields(logrus.Fields{
 			"Method":     r.Method,
 			"Path":       r.URL.Path,
 			"Statuscode": wrapper.StatusCode,
 		})
+		MessageLogger.Info("Request Processed")
 	})
 }

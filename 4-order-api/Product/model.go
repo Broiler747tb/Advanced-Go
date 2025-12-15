@@ -1,8 +1,9 @@
 package Product
 
 import (
-	"gorm.io/gorm"
 	rand2 "math/rand/v2"
+
+	"gorm.io/gorm"
 )
 
 type Product struct {
@@ -10,7 +11,7 @@ type Product struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Hash        string `json:"hash" gorm:"uniqueIndex"`
-	ImageLink   string `json:"imageLink"`
+	ImageLinks  string `json:"imageLinks"`
 }
 
 func NewProduct(name string) *Product {
