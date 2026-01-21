@@ -6,6 +6,8 @@ import (
 	"order-api/Configs"
 	"order-api/Db"
 	"order-api/Product"
+	"order-api/User"
+	"order-api/auth"
 	"order-api/middleware"
 )
 
@@ -13,11 +15,27 @@ var ProductRepo *ProductHandler
 
 func StartServer() {
 	conf := Configs.LoadConfig()
-	deps := ProductHandlerDeps{}
-	database := Db.NewDb(conf)
+	db := Db.NewDb(conf)
 	router := http.NewServeMux()
-	NewLinkHandler(router, deps)
-	ProductRepo = &ProductHandler{ProductRepository: *Product.NewProductRepository(database)}
+
+	//Repositories
+	product := Product.NewProductRepository(db)
+	authRepo := User.NewUserRepository(db)
+
+	//Services
+	authService := auth.NewAuthService(*authRepo)
+
+	//Handler
+	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
+		Config:      conf,
+		AuthService: authService,
+	})
+
+	NewProductHandler(router, ProductHandlerDeps{
+		ProductDB: product,
+	})
+
+	ProductRepo = &ProductHandler{ProductRepository: *Product.NewProductRepository(db)}
 
 	server := http.Server{
 		Addr:    ":8081",

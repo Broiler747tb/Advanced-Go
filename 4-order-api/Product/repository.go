@@ -1,7 +1,6 @@
 package Product
 
 import (
-	"fmt"
 	"order-api/Db"
 )
 
@@ -22,13 +21,6 @@ func (repo *ProductRepository) Create(product *Product) (*Product, error) {
 }
 
 func (repo *ProductRepository) GetByHash(hash string) (*Product, error) {
-	if repo.Database == nil {
-		return nil, fmt.Errorf("repo.Database is nil")
-	}
-	if repo.Database.DB == nil {
-		return nil, fmt.Errorf("repo.Database.DB is nil")
-	}
-
 	var product Product
 	result := repo.Database.DB.First(&product, "hash = ?", hash)
 	if result.Error != nil {
