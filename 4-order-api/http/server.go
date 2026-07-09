@@ -23,7 +23,7 @@ func StartServer() {
 	authRepo := User.NewUserRepository(db)
 
 	//Services
-	authService := auth.NewAuthService(*authRepo)
+	authService := auth.NewAuthService(*authRepo, conf.Auth.Secret)
 
 	//Handler
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
@@ -33,6 +33,7 @@ func StartServer() {
 
 	NewProductHandler(router, ProductHandlerDeps{
 		ProductDB: product,
+		Secret:    conf.Auth.Secret,
 	})
 
 	ProductRepo = &ProductHandler{ProductRepository: *Product.NewProductRepository(db)}

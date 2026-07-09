@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"order-api/Product"
+	"order-api/middleware"
 	"order-api/req"
 	"order-api/res"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 
 type ProductHandlerDeps struct {
 	ProductDB *Product.ProductRepository
+	Secret    string
 }
 
 type ProductHandler struct {
@@ -21,9 +23,9 @@ type ProductHandler struct {
 
 func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 	handler := &ProductHandler{}
-	router.HandleFunc("POST /link", handler.Create())
-	router.HandleFunc("PATCH /link/{id}", handler.Update())
-	router.HandleFunc("DELETE /link/{id}", handler.Delete())
+	router.Handle("POST /link", middleware.IsAuthed(handler.Create(), deps.Secret))
+	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.Update(), deps.Secret))
+	router.Handle("DELETE /link/{id}", middleware.IsAuthed(handler.Delete(), deps.Secret))
 	router.HandleFunc("GET /{hash}", handler.GoTo())
 }
 
