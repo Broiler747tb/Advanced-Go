@@ -12,13 +12,14 @@ import (
 )
 
 type ProductHandlerDeps struct {
+	ProductDB *Product.ProductRepository
 }
 
 type ProductHandler struct {
 	ProductRepository Product.ProductRepository
 }
 
-func NewLinkHandler(router *http.ServeMux, deps ProductHandlerDeps) {
+func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 	handler := &ProductHandler{}
 	router.HandleFunc("POST /link", handler.Create())
 	router.HandleFunc("PATCH /link/{id}", handler.Update())
