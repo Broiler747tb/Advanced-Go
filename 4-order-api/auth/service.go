@@ -8,13 +8,22 @@ import (
 	"order-api/pkg/jwt"
 )
 
+// UserRepo is the slice of the user repository the auth service depends on.
+// Depending on an interface (rather than the concrete *User.UserRepository)
+// lets tests inject an in-memory fake, so the auth flow can be exercised
+// without a real database.
+type UserRepo interface {
+	FindByPhone(phone int) (*User.User, error)
+	Create(user *User.User) (*User.User, error)
+}
+
 type AuthService struct {
-	UserRepository User.UserRepository
+	UserRepository UserRepo
 	Sessions       *SessionStore
 	Secret         string
 }
 
-func NewAuthService(userRepository User.UserRepository, secret string) *AuthService {
+func NewAuthService(userRepository UserRepo, secret string) *AuthService {
 	return &AuthService{
 		UserRepository: userRepository,
 		Sessions:       NewSessionStore(),
