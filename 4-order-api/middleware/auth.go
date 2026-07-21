@@ -12,8 +12,6 @@ type key string
 
 const ContextPhoneKey key = "ContextPhoneKey"
 
-// IsAuthed wraps a handler, requiring a valid "Authorization: Bearer <jwt>"
-// header. On success the caller's phone is stored on the request context.
 func IsAuthed(next http.Handler, secret string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")

@@ -15,8 +15,6 @@ import (
 	"order-api/pkg/jwt"
 )
 
-// fakeUserRepo is an in-memory stand-in for User.UserRepository so the whole
-// SMS auth flow can be exercised without a real Postgres database.
 type fakeUserRepo struct {
 	byPhone map[int]*User.User
 	created int
@@ -30,7 +28,7 @@ func (f *fakeUserRepo) FindByPhone(phone int) (*User.User, error) {
 	if u, ok := f.byPhone[phone]; ok {
 		return u, nil
 	}
-	// Mimic gorm's "record not found" so the service takes the create branch.
+
 	return nil, errors.New("record not found")
 }
 
@@ -40,8 +38,6 @@ func (f *fakeUserRepo) Create(user *User.User) (*User.User, error) {
 	return user, nil
 }
 
-// buildRouter wires the real auth handlers plus one protected endpoint guarded
-// by the real Bearer-token middleware, exactly like the production server does.
 func buildRouter(secret string, repo UserRepo) (*http.ServeMux, *AuthService) {
 	router := http.NewServeMux()
 	service := NewAuthService(repo, secret)
@@ -51,7 +47,6 @@ func buildRouter(secret string, repo UserRepo) (*http.ServeMux, *AuthService) {
 		AuthService: service,
 	})
 
-	// A protected resource: only reachable with a valid "Authorization: Bearer".
 	protected := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		phone := r.Context().Value(middleware.ContextPhoneKey)
 		fmt.Fprintf(w, "hello %v", phone)
@@ -70,18 +65,12 @@ func postJSON(t *testing.T, router http.Handler, path string, body any) *httptes
 	return rec
 }
 
-// TestSMSAuthFlow_HappyPath walks the full two-step flow end to end:
-//
-//	1. POST /auth/send-code {phone}            -> {sessionId}
-//	2. POST /auth/verify-code {sessionId,code} -> {token}
-//	3. GET  /me with "Authorization: Bearer <token>" -> 200
 func TestSMSAuthFlow_HappyPath(t *testing.T) {
 	const secret = "test-secret"
 	const phone = "89990009900"
 	repo := newFakeUserRepo()
 	router, service := buildRouter(secret, repo)
 
-	// --- Step 1: request a code -------------------------------------------
 	rec := postJSON(t, router, "/auth/send-code", map[string]string{"phone": phone})
 	if rec.Code != http.StatusOK {
 		t.Fatalf("send-code: got status %d, want 200; body=%s", rec.Code, rec.Body)
@@ -94,7 +83,6 @@ func TestSMSAuthFlow_HappyPath(t *testing.T) {
 		t.Fatal("send-code: expected a non-empty sessionId")
 	}
 
-	// The user would read this code from the SMS; the store holds it for us.
 	service.Sessions.mu.Lock()
 	code := service.Sessions.sessions[sent.SessionId].Code
 	service.Sessions.mu.Unlock()
@@ -102,7 +90,6 @@ func TestSMSAuthFlow_HappyPath(t *testing.T) {
 		t.Fatalf("expected a 4-digit code, got %d", code)
 	}
 
-	// --- Step 2: verify the code, receive a JWT ---------------------------
 	rec = postJSON(t, router, "/auth/verify-code", map[string]any{
 		"sessionId": sent.SessionId,
 		"code":      code,
@@ -118,7 +105,6 @@ func TestSMSAuthFlow_HappyPath(t *testing.T) {
 		t.Fatal("verify-code: expected a non-empty token")
 	}
 
-	// The token must be a real, valid JWT carrying the caller's phone.
 	valid, data := jwt.NewJWT(secret).Parse(verified.Token)
 	if !valid {
 		t.Fatal("verify-code: returned token did not validate as a real JWT")
@@ -127,12 +113,10 @@ func TestSMSAuthFlow_HappyPath(t *testing.T) {
 		t.Fatalf("token phone = %d, want 89990009900", data.Phone)
 	}
 
-	// A user record should have been created on first login.
 	if repo.created != 1 {
 		t.Fatalf("expected exactly 1 user created, got %d", repo.created)
 	}
 
-	// --- Step 3: use the token on a protected endpoint --------------------
 	req := httptest.NewRequest(http.MethodGet, "/me", nil)
 	req.Header.Set("Authorization", "Bearer "+verified.Token)
 	rec = httptest.NewRecorder()
@@ -157,7 +141,7 @@ func TestVerifyCode_WrongCodeIsRejected(t *testing.T) {
 	realCode := service.Sessions.sessions[sent.SessionId].Code
 	service.Sessions.mu.Unlock()
 
-	wrong := realCode + 1 // guaranteed different, still 4 digits in range
+	wrong := realCode + 1
 	rec = postJSON(t, router, "/auth/verify-code", map[string]any{
 		"sessionId": sent.SessionId,
 		"code":      wrong,

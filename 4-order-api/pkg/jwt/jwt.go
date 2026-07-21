@@ -27,7 +27,7 @@ func (j *JWT) Create(data JWTData) (string, error) {
 
 func (j *JWT) Parse(tokenString string) (bool, *JWTData) {
 	t, err := jwtv5.Parse(tokenString, func(t *jwtv5.Token) (interface{}, error) {
-		// reject anything that isn't HMAC — blocks alg=none / alg-swap forgery
+
 		if _, ok := t.Method.(*jwtv5.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
 		}
@@ -40,6 +40,6 @@ func (j *JWT) Parse(tokenString string) (bool, *JWTData) {
 	if !ok {
 		return false, nil
 	}
-	phone, _ := claims["phone"].(float64) // JSON numbers decode as float64
+	phone, _ := claims["phone"].(float64)
 	return true, &JWTData{Phone: int(phone)}
 }

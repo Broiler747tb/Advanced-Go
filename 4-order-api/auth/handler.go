@@ -34,12 +34,12 @@ func (handler *AuthHandler) SendCode() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		phone, err := strconv.Atoi(body.Phone) // phone arrives as a JSON string
+		phone, err := strconv.Atoi(body.Phone)
 		if err != nil {
 			http.Error(w, "invalid phone", http.StatusBadRequest)
 			return
 		}
-		// qualify .AuthService: handler.SendCode is this method, not the service's
+
 		sessionId, err := handler.AuthService.SendCode(phone)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

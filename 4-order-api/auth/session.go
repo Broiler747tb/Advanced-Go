@@ -25,7 +25,6 @@ func NewSessionStore() *SessionStore {
 	return &SessionStore{sessions: map[string]Session{}}
 }
 
-// Create stores a new session for the given phone/code and returns its id.
 func (s *SessionStore) Create(phone, code int) string {
 	id := generateSessionId()
 	s.mu.Lock()
@@ -34,8 +33,6 @@ func (s *SessionStore) Create(phone, code int) string {
 	return id
 }
 
-// Verify returns (phone, true) only if the session exists, the code matches,
-// and it hasn't expired. The session is consumed (deleted) either way.
 func (s *SessionStore) Verify(id string, code int) (int, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -43,7 +40,7 @@ func (s *SessionStore) Verify(id string, code int) (int, bool) {
 	if !ok {
 		return 0, false
 	}
-	delete(s.sessions, id) // one-time use
+	delete(s.sessions, id)
 	if sess.Code != code || time.Since(sess.CreatedAt) > sessionTTL {
 		return 0, false
 	}
@@ -52,11 +49,10 @@ func (s *SessionStore) Verify(id string, code int) (int, bool) {
 
 func generateSessionId() string {
 	b := make([]byte, 16)
-	_, _ = crand.Read(b) // crypto/rand → unguessable session id
+	_, _ = crand.Read(b)
 	return hex.EncodeToString(b)
 }
 
-// GenerateCode returns a random 4-digit confirmation code (1000-9999).
 func GenerateCode() int {
 	return rand.IntN(9000) + 1000
 }

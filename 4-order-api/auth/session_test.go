@@ -12,7 +12,7 @@ func TestSessionStore_OneTimeUse(t *testing.T) {
 	if _, ok := store.Verify(id, 1234); !ok {
 		t.Fatal("first verify with correct code should succeed")
 	}
-	// The session is consumed on use; a replay must fail.
+
 	if _, ok := store.Verify(id, 1234); ok {
 		t.Fatal("second verify of the same session should fail (one-time use)")
 	}
@@ -25,7 +25,7 @@ func TestSessionStore_WrongCodeConsumesSession(t *testing.T) {
 	if _, ok := store.Verify(id, 9999); ok {
 		t.Fatal("verify with wrong code should fail")
 	}
-	// Even a wrong attempt burns the session, so a brute-force retry can't reuse it.
+
 	if _, ok := store.Verify(id, 1234); ok {
 		t.Fatal("session should be consumed even after a wrong-code attempt")
 	}
@@ -35,7 +35,6 @@ func TestSessionStore_Expired(t *testing.T) {
 	store := NewSessionStore()
 	id := store.Create(89990009900, 1234)
 
-	// Backdate the session past its TTL to simulate a slow user.
 	store.mu.Lock()
 	sess := store.sessions[id]
 	sess.CreatedAt = time.Now().Add(-sessionTTL - time.Minute)

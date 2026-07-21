@@ -17,22 +17,17 @@ func StartServer() {
 	conf := Configs.LoadConfig()
 	db := Db.NewDb(conf)
 
-	// Ensure the tables exist before serving, so a fresh database (e.g. a new
-	// hosted Postgres) works with a single `go run ./Cmd` — no separate step.
 	if err := db.AutoMigrate(&Product.Product{}, &User.User{}); err != nil {
 		panic(err)
 	}
 
 	router := http.NewServeMux()
 
-	//Repositories
 	product := Product.NewProductRepository(db)
 	authRepo := User.NewUserRepository(db)
 
-	//Services
 	authService := auth.NewAuthService(authRepo, conf.Auth.Secret)
 
-	//Handler
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config:      conf,
 		AuthService: authService,

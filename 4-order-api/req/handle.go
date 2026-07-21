@@ -8,13 +8,13 @@ import (
 func HandleBody[T any](w http.ResponseWriter, r *http.Request) (*T, error) {
 	body, err := Decode[T](r.Body)
 	if err != nil {
-		// Malformed JSON is a bad request, not "402 Payment Required".
+
 		res.Json(w, err.Error(), http.StatusBadRequest)
 		return nil, err
 	}
 	err = IsValid(body)
 	if err != nil {
-		// Well-formed JSON that fails validation is "422 Unprocessable Entity".
+
 		res.Json(w, err.Error(), http.StatusUnprocessableEntity)
 		return nil, err
 	}
