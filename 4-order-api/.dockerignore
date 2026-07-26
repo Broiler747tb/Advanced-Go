@@ -1,0 +1,9 @@
+# Локальный .env не тащим в образ — переменные приходят из docker-compose
+.env
+
+# Артефакты сборки / IDE
+*.exe
+*.out
+.git
+.idea
+.vscode
