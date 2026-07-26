@@ -16,16 +16,18 @@ var ProductRepo *ProductHandler
 func StartServer() {
 	conf := Configs.LoadConfig()
 	db := Db.NewDb(conf)
+
+	if err := db.AutoMigrate(&Product.Product{}, &User.User{}); err != nil {
+		panic(err)
+	}
+
 	router := http.NewServeMux()
 
-	//Repositories
 	product := Product.NewProductRepository(db)
 	authRepo := User.NewUserRepository(db)
 
-	//Services
-	authService := auth.NewAuthService(*authRepo)
+	authService := auth.NewAuthService(authRepo, conf.Auth.Secret)
 
-	//Handler
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config:      conf,
 		AuthService: authService,
@@ -33,6 +35,7 @@ func StartServer() {
 
 	NewProductHandler(router, ProductHandlerDeps{
 		ProductDB: product,
+		Secret:    conf.Auth.Secret,
 	})
 
 	ProductRepo = &ProductHandler{ProductRepository: *Product.NewProductRepository(db)}

@@ -18,15 +18,6 @@ func (repo *UserRepository) Create(product *User) (*User, error) {
 	return product, nil
 }
 
-func (repo *UserRepository) FindByEmail(email string) (*User, error) {
-	var product User
-	result := repo.Database.DB.First(&product, "email = ?", email)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return &product, nil
-}
-
 func (repo *UserRepository) FindByPhone(phone int) (*User, error) {
 	var product User
 	result := repo.Database.DB.First(&product, "phone = ?", phone)
