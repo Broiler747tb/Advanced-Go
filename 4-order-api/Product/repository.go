@@ -29,6 +29,15 @@ func (repo *ProductRepository) GetByHash(hash string) (*Product, error) {
 	return &product, nil
 }
 
+func (repo *ProductRepository) GetByIds(ids []uint) ([]Product, error) {
+	var products []Product
+	result := repo.Database.DB.Find(&products, "id IN ?", ids)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return products, nil
+}
+
 func (repo *ProductRepository) GetById(id uint) (*Product, error) {
 	var product Product
 	result := repo.Database.DB.First(&product, "id = ?", id)

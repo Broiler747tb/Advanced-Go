@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"order-api/Configs"
 	"order-api/Db"
+	"order-api/Order"
 	"order-api/Product"
 	"order-api/User"
 	"order-api/auth"
@@ -17,7 +18,7 @@ func StartServer() {
 	conf := Configs.LoadConfig()
 	db := Db.NewDb(conf)
 
-	if err := db.AutoMigrate(&Product.Product{}, &User.User{}); err != nil {
+	if err := db.AutoMigrate(&Product.Product{}, &User.User{}, &Order.Order{}); err != nil {
 		panic(err)
 	}
 
@@ -25,6 +26,7 @@ func StartServer() {
 
 	product := Product.NewProductRepository(db)
 	authRepo := User.NewUserRepository(db)
+	order := Order.NewOrderRepository(db)
 
 	authService := auth.NewAuthService(authRepo, conf.Auth.Secret)
 
@@ -36,6 +38,13 @@ func StartServer() {
 	NewProductHandler(router, ProductHandlerDeps{
 		ProductDB: product,
 		Secret:    conf.Auth.Secret,
+	})
+
+	NewOrderHandler(router, OrderHandlerDeps{
+		OrderRepository:   order,
+		ProductRepository: product,
+		UserRepository:    authRepo,
+		Secret:            conf.Auth.Secret,
 	})
 
 	ProductRepo = &ProductHandler{ProductRepository: *Product.NewProductRepository(db)}
